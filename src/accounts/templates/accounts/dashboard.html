@@ -4,9 +4,9 @@
 
 {%  include 'accounts/status.html' %}
 
-<br>
 
-<div class="row">
+
+<div class="row mt-5">
 	<div class="col-md-5">
 		<h5>CUSTOMERS:</h5>
 		<hr>
@@ -20,7 +20,7 @@
 
 				{% for customer in customers %}
 					<tr>
-						<td>{{ customer.name }}</td>
+						<td><a href="{% url 'customer' customer.id %}">{{ customer.name }}</a></td>
 						<td>{{ customer.phone }}</td>
 					</tr>
 				{% endfor %}

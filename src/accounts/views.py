@@ -27,6 +27,8 @@ def products(request):
     products = Product.objects.all()
     return render(request, 'accounts/products.html', {'products':products})
 
-def customer(request):
-    """return the customer templates"""
-    return render(request, 'accounts/customer.html')
+def customer(request, id):
+    """return the customer detail"""
+    customer = Customer.objects.get(id=id)
+    orders = customer.order_set.all()
+    return render(request, 'accounts/customer.html', {'customer':customer, 'orders':orders})
