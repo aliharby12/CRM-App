@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+from .models import *
 
 def home(request):
     """return the dashboard templates"""
@@ -8,7 +8,7 @@ def home(request):
 def products(request):
     """return the products templates"""
     return render(request, 'accounts/products.html')
-    
+
 def customer(request):
     """return the customer templates"""
     return render(request, 'accounts/customer.html')
