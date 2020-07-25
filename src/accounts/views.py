@@ -1,5 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import *
+from .forms import OrderForm
 
 def home(request):
     """return the dashboard templates"""
@@ -32,3 +33,16 @@ def customer(request, id):
     customer = Customer.objects.get(id=id)
     orders = customer.order_set.all()
     return render(request, 'accounts/customer.html', {'customer':customer, 'orders':orders})
+
+def createOrder(request):
+    """create a view to order create"""
+    form = OrderForm()
+    if request.method == 'POST':
+        """check the method of the request"""
+        form = OrderForm(request.POST)
+        if form.is_valid:
+            form.save()
+            return redirect('/')
+    form = OrderForm()
+    context = {'form':form}
+    return render(request, 'accounts/order_form.html', context)
