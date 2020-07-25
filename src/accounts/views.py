@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from .models import *
 from .forms import OrderForm
+from django.forms import inlineformset_factory
 
 def home(request):
     """return the dashboard templates"""
@@ -34,18 +35,20 @@ def customer(request, id):
     orders = customer.order_set.all()
     return render(request, 'accounts/customer.html', {'customer':customer, 'orders':orders})
 
-def createOrder(request):
+def createOrder(request, id):
     """create a view to order create"""
-    form = OrderForm()
+    OrderFormSet = inlineformset_factory(Customer, Order, fields=('product', 'status'), extra=10 )
+    customer = Customer.objects.get(id=id)
+    formset = OrderFormSet(queryset=Order.objects.none(),instance=customer)
     if request.method == 'POST':
-        """check the method of the request"""
-        form = OrderForm(request.POST)
-        if form.is_valid:
-            form.save()
-            return redirect('/')
-    form = OrderForm()
-    context = {'form':form}
+    	formset = OrderFormSet(request.POST, instance=customer)
+    	if formset.is_valid():
+    		formset.save()
+    		return redirect('/')
+
+    context = {'form':formset}
     return render(request, 'accounts/order_form.html', context)
+
 
 def updateOrder(request, id):
     """create a function to edit specific order"""
