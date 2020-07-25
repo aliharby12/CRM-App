@@ -59,3 +59,13 @@ def updateOrder(request, id):
 
     context = {'form':form}
     return render(request, 'accounts/order_form.html', context)
+
+def deleteOrder(request, id):
+    """create a function to delete specific order"""
+    order = Order.objects.get(id=id)
+    if request.method == "POST":
+    	order.delete()
+    	return redirect('/')
+
+    context = {'order':order}
+    return render(request, 'accounts/delete.html', context)
