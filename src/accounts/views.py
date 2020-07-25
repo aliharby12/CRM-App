@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from .models import *
 from .forms import OrderForm
 from django.forms import inlineformset_factory
+from .filters import OrderFilter
 
 def home(request):
     """return the dashboard templates"""
@@ -33,7 +34,10 @@ def customer(request, id):
     """return the customer detail"""
     customer = Customer.objects.get(id=id)
     orders = customer.order_set.all()
-    return render(request, 'accounts/customer.html', {'customer':customer, 'orders':orders})
+    myFilter = OrderFilter(request.GET, queryset=orders)
+    orders = myFilter.qs
+    context = {'customer':customer, 'orders':orders, 'myFilter':myFilter}
+    return render(request, 'accounts/customer.html', context)
 
 def createOrder(request, id):
     """create a view to order create"""
