@@ -1,9 +1,12 @@
 {%  extends 'accounts/main.html' %}
 
 {% block content %}
-
+<div class="container">
+	{% for message in messages %}
+		<p id="messages">{{message}}</p>
+	{% endfor %}
+</div>
 {%  include 'accounts/status.html' %}
-
 
 
 <div class="row mt-5">

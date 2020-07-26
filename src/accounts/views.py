@@ -1,9 +1,13 @@
 from django.shortcuts import render, redirect
 from .models import *
-from .forms import OrderForm
+from .forms import OrderForm, UserRegisterForm
 from django.forms import inlineformset_factory
 from .filters import OrderFilter
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 
+@login_required(login_url = 'login')
 def home(request):
     """return the dashboard templates"""
     orders = Order.objects.all()
@@ -27,11 +31,13 @@ def home(request):
 
     return render(request, 'accounts/dashboard.html', context)
 
+@login_required(login_url = 'login')
 def products(request):
     """return the products templates"""
     products = Product.objects.all()
     return render(request, 'accounts/products.html', {'products':products})
 
+@login_required(login_url = 'login')
 def customer(request, id):
     """return the customer detail"""
     customer = Customer.objects.get(id=id)
@@ -41,6 +47,7 @@ def customer(request, id):
     context = {'customer':customer, 'orders':orders, 'myFilter':myFilter}
     return render(request, 'accounts/customer.html', context)
 
+@login_required(login_url = 'login')
 def createOrder(request, id):
     """create a view to order create"""
     OrderFormSet = inlineformset_factory(Customer, Order, fields=('product', 'status'), extra=10 )
@@ -55,7 +62,7 @@ def createOrder(request, id):
     context = {'form':formset}
     return render(request, 'accounts/order_form.html', context)
 
-
+@login_required(login_url = 'login')
 def updateOrder(request, id):
     """create a function to edit specific order"""
     order = Order.objects.get(id=id)
@@ -69,6 +76,7 @@ def updateOrder(request, id):
     context = {'form':form}
     return render(request, 'accounts/order_form.html', context)
 
+@login_required(login_url = 'login')
 def deleteOrder(request, id):
     """create a function to delete specific order"""
     order = Order.objects.get(id=id)
@@ -78,3 +86,45 @@ def deleteOrder(request, id):
 
     context = {'order':order}
     return render(request, 'accounts/delete.html', context)
+
+def userRegister(request):
+    """user registration view"""
+    form = UserRegisterForm()
+
+    # check the method
+    if request.method == 'POST':
+        form = UserRegisterForm(request.POST)
+        if form.is_valid():
+            form.save()
+
+            # import the username to use it in the message
+            user = form.cleaned_data.get('username')
+            messages.success(request, 'User Was Created Successfully !, welcome, ' + user)
+            return redirect('login')
+    context = {'form':form}
+    return render(request, 'accounts/register.html', context)
+
+def userLogin(request):
+    """user login view"""
+    if request.method == 'POST':
+
+        # grab the username and password for this user from database
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        # Check the authentications of user
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            messages.success(request, 'congratulations, you are now logged in !')
+            return redirect('dashboard')
+        else:
+            messages.info(request, 'Username or password are incorrect')
+    return render(request, 'accounts/login.html', {})
+
+def userLogout(request):
+    """user logout view"""
+    logout(request)
+    messages.success(request, 'now, you are logged out !')
+    return redirect('login')
