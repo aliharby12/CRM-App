@@ -6,8 +6,11 @@ from .filters import OrderFilter
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
+from .decorators import unauthenticated_user, allowed_users, admin_only
 
-@login_required(login_url = 'login')
+@login_required(login_url='login')
+@admin_only
 def home(request):
     """return the dashboard templates"""
     orders = Order.objects.all()
@@ -32,12 +35,14 @@ def home(request):
     return render(request, 'accounts/dashboard.html', context)
 
 @login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])
 def products(request):
     """return the products templates"""
     products = Product.objects.all()
     return render(request, 'accounts/products.html', {'products':products})
 
 @login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])
 def customer(request, id):
     """return the customer detail"""
     customer = Customer.objects.get(id=id)
@@ -48,6 +53,7 @@ def customer(request, id):
     return render(request, 'accounts/customer.html', context)
 
 @login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])
 def createOrder(request, id):
     """create a view to order create"""
     OrderFormSet = inlineformset_factory(Customer, Order, fields=('product', 'status'), extra=10 )
@@ -63,6 +69,7 @@ def createOrder(request, id):
     return render(request, 'accounts/order_form.html', context)
 
 @login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])
 def updateOrder(request, id):
     """create a function to edit specific order"""
     order = Order.objects.get(id=id)
@@ -77,6 +84,7 @@ def updateOrder(request, id):
     return render(request, 'accounts/order_form.html', context)
 
 @login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])
 def deleteOrder(request, id):
     """create a function to delete specific order"""
     order = Order.objects.get(id=id)
@@ -87,6 +95,7 @@ def deleteOrder(request, id):
     context = {'order':order}
     return render(request, 'accounts/delete.html', context)
 
+@unauthenticated_user
 def userRegister(request):
     """user registration view"""
     form = UserRegisterForm()
@@ -104,6 +113,7 @@ def userRegister(request):
     context = {'form':form}
     return render(request, 'accounts/register.html', context)
 
+@unauthenticated_user
 def userLogin(request):
     """user login view"""
     if request.method == 'POST':
@@ -128,3 +138,8 @@ def userLogout(request):
     logout(request)
     messages.success(request, 'now, you are logged out !')
     return redirect('login')
+
+def userPage(request):
+    """create a user page to render user information"""
+    context = {}
+    return render(request, 'accounts/user.html', context)
