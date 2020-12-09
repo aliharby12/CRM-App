@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
 
 class Customer(models.Model):
     """create a database table for customer"""
@@ -13,6 +14,12 @@ class Customer(models.Model):
         """return the name of the customer"""
         return self.name
 
+def create_customer(sender, **kwargs):
+    """create a function to create a customer just create a  user"""
+    if kwargs['created']:
+        Customer.objects.create(user=kwargs['instance'])
+
+post_save.connect(create_customer, sender=User)
 
 class Tag(models.Model):
     """create a database table for tags"""
